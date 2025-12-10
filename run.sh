@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -x
 cd "$(dirname "$0")"
 
 mkdir -p n8n_data
