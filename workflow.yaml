@@ -1,0 +1,151 @@
+permissions:
+  - '*'
+
+sessions:
+  session:
+    useTLS: false
+    redirect: true
+
+jobs:
+
+  prepare_job_directory:
+    ssh:
+      remoteHost: ${{ inputs.resource.ip }}
+    steps:
+      - name: Clone Repository
+        run: |
+          set -x
+          mkdir -p $(dirname ${{ inputs.rundir }})
+          git clone -b ${{ inputs.advanced_settings.repository_branch }} ${{ inputs.advanced_settings.repository }} ${{ inputs.rundir }}
+          cd ${{ inputs.rundir }}
+          git checkout ${{ inputs.advanced_settings.repository_branch }}
+          git branch --set-upstream-to=origin/${{ inputs.advanced_settings.repository_branch }}
+          git pull
+          rm -rf logs
+      - name: Edit Input Files
+        run: |
+          set -x
+
+          cd ${{ inputs.rundir }}
+          basepath="/me/session/${PW_USER}/${{ sessions.session }}/"
+
+          # Env file
+          cp docker-compose.yml.template docker-compose.yml
+          sed -i "s|__BASE_PATH__|${basepath}|g" docker-compose.yml
+
+  wait_and_run_cleanup:
+    needs:
+      - prepare_job_directory
+    ssh:
+      remoteHost: ${{ inputs.resource.ip }}
+    steps:
+      - name: Wait and run cleanup
+        run: |
+          cd ${{ inputs.rundir }}
+          while [ ! -f "CANCEL" ]; do
+              echo "$(date) Waiting for CANCEL file..."
+              sleep 5
+          done
+          echo "(date) CANCEL file detected!"
+          rm -f CANCEL
+        cleanup: |
+          set -x
+          cd ${{ inputs.rundir }}
+          sudo docker compose down -v
+
+  start_service:
+    needs:
+      - prepare_job_directory
+    ssh:
+      remoteHost: ${{ inputs.resource.ip }}
+    steps:
+      - name: Start Service
+        run: |
+          cd ${{ inputs.rundir }}
+          bash run.sh
+
+  stream_docker_logs:
+    if: ${{ always }}
+    needs:
+      - start_service
+    ssh:
+      remoteHost: ${{ inputs.resource.ip }}
+    steps:
+      - name: Stream Docker Logs
+        run: |
+          cd ${{ inputs.rundir }}
+          sudo docker compose logs -f
+          touch CANCEL
+
+  create_session:
+    needs:
+      - start_service
+    ssh:
+      remoteHost: ${{ inputs.resource.ip }}
+    steps:
+      - name: Wait for Server To Start
+        early-cancel: any-job-failed
+        run: |
+          TIMEOUT=5
+          RETRY_INTERVAL=3
+          remote_host="localhost"
+          remote_port="8989"
+
+          # Function to check if server is listening
+          check_server() {
+              curl --silent --connect-timeout "$TIMEOUT" "http://${remote_host}:${remote_port}" >/dev/null 2>&1
+              return $?
+          }
+
+          cd ${{ inputs.rundir }}
+
+          # Main loop
+          attempt=1
+          while true; do
+              echo "$(date) Attempt $attempt: Checking if server is listening on ${remote_host}:${remote_port}..."
+              
+              if check_server; then
+                  echo "$(date) Success: Server is listening on ${remote_host}:${remote_port}!"
+                  exit 0
+              elif [ -f job.ended ]; then
+                  echo "$(date) Job was completed. Exiting... "
+                  exit 0
+              else
+                  echo "$(date) Server not responding. Retrying in ${RETRY_INTERVAL} seconds..."
+                  sleep "$RETRY_INTERVAL"
+                  ((attempt++))
+              fi
+          done
+      - name: Update Session
+        uses: parallelworks/update-session
+        with:
+          remotePort: '8989'
+          target: '${{ inputs.resource.id }}'
+          name: '${{ sessions.session }}'
+
+'on':
+  execute:
+    inputs:
+      resource:
+        type: compute-clusters
+        label: Compute Cluster
+        autoselect: true
+        include-workspace: false
+        tooltip: Resource to run the service
+      rundir:
+        label: Run Directory
+        default: ~/n8n
+        type: string
+      advanced_settings:
+        type: group
+        label: Advanced Settings
+        collapsed: true
+        items:
+          repository:
+            type: string
+            label: Repository
+            default: https://github.com/parallelworks/n8n-workflow.git
+          repository_branch:
+            type: string
+            label: Repository Branch
+            default: main

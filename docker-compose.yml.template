@@ -1,0 +1,17 @@
+services:
+  n8n:
+    image: docker.io/n8nio/n8n:1.123.4
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "8989:8989"
+    environment:
+      - GENERIC_TIMEZONE=UTC
+      - N8N_HOST=localhost
+      - N8N_PORT=8989
+      - N8N_PROTOCOL=http
+      - N8N_PATH=__BASE_PATH__
+      - N8N_EDITOR_BASE_URL=https://activate.parallel.works__BASE_PATH__
+      - WEBHOOK_URL=https://activate.parallel.works__BASE_PATH__
+    volumes:
+      - ./n8n_data:/home/node/.n8n
