@@ -6,17 +6,16 @@ mkdir -p n8n_data
 chmod 777 n8n_data -Rf
 
 # if no sudo access enable rootless docker and dont run with sudo
-sudo -l >/dev/null 2>&1
-if [ $? -eq 0 ]; then
+if sudo -n true 2>/dev/null; then
 
-    echo "User has sudo privileges"
+    echo "User can sudo to root without password"
     
     sudo systemctl start docker
     docker_cmd="sudo docker"
 
 else
 
-    echo "User does NOT have sudo privileges"
+    echo "User cannot sudo to root without password"
 
     source lib.sh
     start_rootless_docker
