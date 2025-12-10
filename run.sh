@@ -19,7 +19,12 @@ else
     echo "User does NOT have sudo privileges"
 
     source lib.sh
+<<<<<<< HEAD
+    start_rootless_docker()
+
+=======
     start_rootless_docker
+>>>>>>> origin/main
     docker_cmd="docker"
 
 fi
@@ -28,6 +33,7 @@ echo "[1/3] Pulling images..."
 $docker_cmd compose pull
 
 echo "[2/3] Starting stack..."
+$docker_cmd compose down # restart if already running
 $docker_cmd compose up -d
 
 echo "[3/3] Status:"
