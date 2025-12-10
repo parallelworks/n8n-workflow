@@ -78,7 +78,11 @@ jobs:
       - name: Stream Docker Logs
         run: |
           cd ${{ inputs.rundir }}
-          sudo docker compose logs -f
+          if sudo -n true 2>/dev/null; then
+            sudo docker compose logs -f
+          else
+            docker compose logs -f
+          fi
           touch CANCEL
 
   create_session:
