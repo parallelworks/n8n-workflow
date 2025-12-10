@@ -51,7 +51,11 @@ jobs:
         cleanup: |
           set -x
           cd ${{ inputs.rundir }}
-          sudo docker compose down -v
+          if sudo -n true 2>/dev/null; then
+            sudo docker compose down -v
+          else
+            docker compose down -v
+          fi
 
   start_service:
     needs:
