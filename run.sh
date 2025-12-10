@@ -19,8 +19,12 @@ else
     echo "User does NOT have sudo privileges"
 
     source lib.sh
+<<<<<<< HEAD
     start_rootless_docker()
 
+=======
+    start_rootless_docker
+>>>>>>> origin/main
     docker_cmd="docker"
 
 fi
