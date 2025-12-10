@@ -1,36 +1,42 @@
 {
-  "name": "Hello World Every 5 Seconds",
+  "name": "Hello World Every Minute",
   "nodes": [
     {
-      "id": "CronTrigger",
-      "name": "Every 5 Seconds",
-      "type": "n8n-nodes-base.cron",
+      "parameters": {
+        "command": "echo \"hello world\""
+      },
+      "id": "a22b7f57-6959-436f-b342-844cddb8790b",
+      "name": "Echo Hello World",
+      "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
-      "position": [240, 300],
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
       "parameters": {
         "triggerTimes": {
           "item": [
             {
-              "mode": "everySeconds",
-              "secondsInterval": 5
+              "mode": "everyMinute"
             }
           ]
         }
-      }
-    },
-    {
-      "id": "ExecuteCommand",
-      "name": "Echo Hello World",
-      "type": "n8n-nodes-base.executeCommand",
+      },
+      "id": "2e61fbfa-84bb-4904-83c5-ddfff0cdc717",
+      "name": "Every Minute",
+      "type": "n8n-nodes-base.cron",
       "typeVersion": 1,
-      "position": [480, 300],
-      "parameters": {
-        "command": "echo \"hello world\""
-      }
+      "position": [
+        0,
+        0
+      ]
     }
   ],
+  "pinData": {},
   "connections": {
-    "Every 5 Seconds": {
+    "Every Minute": {
       "main": [
         [
           {
@@ -41,5 +47,15 @@
         ]
       ]
     }
-  }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e2b9fbb6-a3af-4b27-b943-59f8b6e8ac06",
+  "meta": {
+    "instanceId": "a68a706ab7577b4f2a987e9b96d0c97efe59db4bacf24f69a86b7d5f0bac223b"
+  },
+  "id": "zxKoGYjc0Kde6iF2",
+  "tags": []
 }
