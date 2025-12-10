@@ -1,0 +1,45 @@
+{
+  "name": "Hello World Every 5 Seconds",
+  "nodes": [
+    {
+      "id": "CronTrigger",
+      "name": "Every 5 Seconds",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everySeconds",
+              "secondsInterval": 5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ExecuteCommand",
+      "name": "Echo Hello World",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [480, 300],
+      "parameters": {
+        "command": "echo \"hello world\""
+      }
+    }
+  ],
+  "connections": {
+    "Every 5 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Echo Hello World",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
