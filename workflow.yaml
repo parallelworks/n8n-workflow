@@ -21,7 +21,7 @@ jobs:
           git checkout ${{ inputs.advanced_settings.repository_branch }}
           git branch --set-upstream-to=origin/${{ inputs.advanced_settings.repository_branch }}
           git pull
-          rm -rf logs
+          rm -rf logs CANCEL
       - name: Edit Input Files
         run: |
           set -x
